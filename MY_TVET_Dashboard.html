@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MY TVET Dashboard</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#18243a;background:#f3f6fb}
+*{box-sizing:border-box}body{margin:0}.container{max-width:1060px;margin:auto;padding:48px 22px}
+header{margin-bottom:28px}h1{font-size:clamp(26px,4vw,36px);margin:0 0 8px}p{color:#64748b;margin:0}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:25px}
+.card,.panel{background:white;border:1px solid #e6ebf2;border-radius:18px;box-shadow:0 6px 24px #223b6010}
+.card{padding:24px}.card .label{font-size:14px;color:#64748b;font-weight:600}.value{font-size:38px;font-weight:750;margin-top:13px}
+.badge{display:inline-block;border-radius:99px;padding:8px 13px;font-size:14px;font-weight:700;margin-top:15px}
+.badge.progress{background:#fef3c7;color:#92400e}.badge.upcoming{background:#dbeafe;color:#1d4ed8}.badge.completed{background:#dcfce7;color:#166534}
+.panel{padding:28px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h2{font-size:22px;margin:0 0 8px}.counter{font-size:13px;color:#64748b}
+.progress-track{height:9px;background:#e9eef5;border-radius:20px;overflow:hidden;margin:20px 0}
+.progress-bar{height:100%;background:#2563eb;width:0%;transition:width .2s}
+ul{padding:0;margin:0;list-style:none}li{border-top:1px solid #edf1f6}
+.item{display:flex;align-items:center;gap:14px;padding:17px 2px;cursor:pointer}
+.item input{width:19px;height:19px;accent-color:#2563eb;cursor:pointer}
+.item span{font-size:15px}.item.done span{text-decoration:line-through;color:#94a3b8}
+footer{font-size:12px;color:#94a3b8;margin-top:20px}
+@media(max-width:650px){.container{padding:26px 15px}.cards{grid-template-columns:1fr}.card{padding:20px}.panel{padding:20px}}
+</style>
+</head>
+<body>
+<main class="container">
+<header><h1>MY TVET Dashboard</h1><p>Workshop overview and preparation tracker</p></header>
+<section class="cards" aria-label="Workshop summary">
+<div class="card"><div class="label">Students Registered</div><div class="value" id="students">34</div></div>
+<div class="card"><div class="label">Task Remaining</div><div class="value" id="remaining" aria-live="polite">5</div></div>
+<div class="card"><div class="label">Workshop Status</div><div id="status" class="badge progress">In Progress</div></div>
+</section>
+<section class="panel">
+<div class="panel-head"><div><h2>Preparation Checklist</h2><p>Tick tasks as you complete them.</p></div><div id="counter" class="counter" aria-live="polite"></div></div>
+<div class="progress-track" role="progressbar" aria-label="Preparation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack"><div class="progress-bar" id="progressBar"></div></div>
+<ul id="checklist"></ul>
+</section>
+<footer>Sample workshop data · Checklist progress is saved in this browser.</footer>
+</main>
+<script>
+const studentsRegistered = 34;
+const workshopStatus = "In Progress"; // "Upcoming", "In Progress", or "Completed"
+const initialItems = [
+{id:1,label:"Book the training room",done:true},
+{id:2,label:"Send invitation emails to students",done:true},
+{id:3,label:"Prepare slide deck",done:false},
+{id:4,label:"Print attendance sheet",done:false},
+{id:5,label:"Set up lab workstations",done:false},
+{id:6,label:"Prepare student handouts",done:false},
+{id:7,label:"Test projector and audio",done:false},
+{id:8,label:"Confirm facilitator availability",done:true}
+];
+const storageKey="my-tvet-checklist-v1";
+let items=initialItems.map(item=>({...item}));
+try {
+ const saved=JSON.parse(localStorage.getItem(storageKey));
+ if(Array.isArray(saved)) items=items.map(item=>({...item,done:typeof saved.find(s=>s.id===item.id)?.done==="boolean"?saved.find(s=>s.id===item.id).done:item.done}));
+} catch(e) { /* Browser storage may be unavailable */ }
+document.getElementById("students").textContent=studentsRegistered;
+const statusElement=document.getElementById("status");
+statusElement.textContent=workshopStatus;
+statusElement.className="badge "+({"Upcoming":"upcoming","In Progress":"progress","Completed":"completed"}[workshopStatus]||"upcoming");
+function render(){
+ const remaining=items.filter(item=>!item.done).length;
+ const completed=items.length-remaining;
+ const percent=items.length?Math.round(completed/items.length*100):100;
+ document.getElementById("remaining").textContent=remaining;
+ document.getElementById("counter").textContent=`${completed} of ${items.length} completed (${percent}%)`;
+ document.getElementById("progressBar").style.width=percent+"%";
+ document.getElementById("progressTrack").setAttribute("aria-valuenow",percent);
+ const list=document.getElementById("checklist");
+ list.replaceChildren();
+ items.forEach(item=>{
+  const li=document.createElement("li");
+  const label=document.createElement("label");
+  label.className="item"+(item.done?" done":"");
+  const checkbox=document.createElement("input");
+  checkbox.type="checkbox";checkbox.checked=item.done;
+  checkbox.addEventListener("change",()=>{
+   items=items.map(i=>i.id===item.id?{...i,done:checkbox.checked}:i);
+   try{localStorage.setItem(storageKey,JSON.stringify(items));}catch(e){}
+   render();
+  });
+  const span=document.createElement("span");span.textContent=item.label;
+  label.append(checkbox,span);li.append(label);list.append(li);
+ });
+}
+render();
+</script>
+</body></html>
