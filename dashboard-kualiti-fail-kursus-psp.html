@@ -1,0 +1,434 @@
+
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Kualiti Fail Kursus — PSP</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #f7f8fa;
+    color: #1f2328;
+  }
+  /* HEADER */
+  .header {
+    background: #1F4E79;
+    color: #fff;
+    padding: 20px 32px 16px;
+    border-bottom: 4px solid #2E75B6;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
+  .header p { font-size: 13px; color: #BDD7EE; margin-top: 2px; }
+  .header-meta { display: flex; gap: 24px; margin-top: 10px; flex-wrap: wrap; }
+  .header-meta span {
+    font-size: 12px; color: #BDD7EE;
+    background: rgba(255,255,255,0.08);
+    padding: 3px 10px; border-radius: 12px;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 960px; margin: 0 auto; padding: 24px 20px 40px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: #57606a;
+    margin: 28px 0 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;
+  }
+
+  /* KPI CARDS */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 16px; text-align: center;
+  }
+  .kpi-card .kpi-value { font-size: 32px; font-weight: 700; line-height: 1.1; }
+  .kpi-card .kpi-label { font-size: 12px; color: #57606a; margin-top: 4px; }
+  .kpi-card .kpi-sub { font-size: 11px; margin-top: 2px; font-weight: 600; }
+  .kpi-green .kpi-value { color: #1a7f37; }
+  .kpi-green .kpi-sub { color: #1a7f37; }
+  .kpi-green { border-top: 3px solid #1a7f37; }
+  .kpi-yellow .kpi-value { color: #9a6700; }
+  .kpi-yellow .kpi-sub { color: #9a6700; }
+  .kpi-yellow { border-top: 3px solid #d4a017; }
+  .kpi-red .kpi-value { color: #cf222e; }
+  .kpi-red .kpi-sub { color: #cf222e; }
+  .kpi-red { border-top: 3px solid #cf222e; }
+  .kpi-blue .kpi-value { color: #0969da; }
+  .kpi-blue .kpi-sub { color: #0969da; }
+  .kpi-blue { border-top: 3px solid #0969da; }
+
+  /* COMPLIANCE BAR */
+  .compliance-box {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;
+  }
+  .compliance-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .compliance-header h3 { font-size: 14px; font-weight: 600; }
+  .compliance-pct { font-size: 28px; font-weight: 700; color: #1a7f37; }
+  .bar-track {
+    height: 18px; background: #f7f8fa; border-radius: 9px;
+    overflow: hidden; border: 1px solid #e5e7eb;
+    display: flex;
+  }
+  .bar-segment { height: 100%; transition: width 0.3s; }
+  .bar-green { background: #2da44e; }
+  .bar-yellow { background: #d4a017; }
+  .bar-orange { background: #e07000; }
+  .bar-red { background: #cf222e; }
+  .bar-legend { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #57606a; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* TWO COLUMN */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* TABLE */
+  .card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+  }
+  .card-header {
+    padding: 12px 16px; border-bottom: 1px solid #e5e7eb;
+    font-size: 13px; font-weight: 600; background: #f7f8fa;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-header .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+  }
+  .badge-red { background: #ffebe9; color: #cf222e; }
+  .badge-green { background: #dafbe1; color: #1a7f37; }
+  .badge-yellow { background: #fff8c5; color: #9a6700; }
+  .badge-blue { background: #ddf4ff; color: #0969da; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: #f7f8fa; font-size: 11px; font-weight: 600;
+    color: #57606a; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 8px 12px; text-align: left; border-bottom: 1px solid #e5e7eb;
+  }
+  td { padding: 8px 12px; border-bottom: 1px solid #f0f1f3; font-size: 13px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7f8fa; }
+
+  /* STATUS PILL */
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .pill-green { background: #dafbe1; color: #1a7f37; }
+  .pill-yellow { background: #fff8c5; color: #9a6700; }
+  .pill-orange { background: #fff1e5; color: #bc4c00; }
+  .pill-red { background: #ffebe9; color: #cf222e; }
+
+  /* TREND TABLE */
+  .trend-pct { font-weight: 700; }
+  .trend-up { color: #1a7f37; }
+  .trend-bar {
+    display: inline-block; height: 8px; border-radius: 4px;
+    background: #2da44e; vertical-align: middle; margin-left: 6px;
+  }
+
+  /* CHECKLIST */
+  .checklist { padding: 0; list-style: none; }
+  .checklist li {
+    padding: 8px 16px; border-bottom: 1px solid #f0f1f3;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+
+  /* ALERT BOX */
+  .alert-box {
+    background: #ffebe9; border: 1px solid #ffcecb; border-radius: 8px; padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .alert-box h4 { color: #cf222e; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .alert-list { list-style: none; padding: 0; }
+  .alert-list li {
+    font-size: 12px; color: #82071e; padding: 3px 0;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .alert-list li::before { content: "⚠"; font-size: 12px; flex-shrink: 0; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 12px; color: #57606a;
+  }
+
+  @media (max-width: 640px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+
+<div class="header">
+  <h1>📋 Dashboard Kualiti Fail Kursus</h1>
+  <p>Politeknik Seberang Perai — Jabatan Pengurusan Kualiti</p>
+  <div class="header-meta">
+    <span>📅 Semester 1 Sesi 2024/2025</span>
+    <span>👥 73 Pensyarah</span>
+    <span>📚 20 Kursus</span>
+    <span>🗓 Dikemaskini: Januari 2025</span>
+  </div>
+</div>
+
+<div class="container">
+
+  
+  <div class="alert-box">
+    <h4>🚨 Tindakan Segera Diperlukan</h4>
+    <ul class="alert-list">
+      <li>Noraini binti Zainudin (P004) — DFW1013 Fizik Binaan: Diedar sejak 02/01/2025, masih belum diterima</li>
+      <li>Zulkifli bin Ramli (P007) — DPA1013 Pentadbiran Awam: Peringatan ke-2 perlu dihantar</li>
+      <li>Mohd Fadzil bin Hassan (P003) — DBM1013: Menunggu Soalan Peperiksaan</li>
+      <li>Hairul Nizam bin Daud (P009) — DCS2023: Belum hantar rubrik penilaian</li>
+    </ul>
+  </div>
+
+  
+  <div class="section-title">Ringkasan Status Pematuhan</div>
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-value">10</div>
+      <div class="kpi-label">Jumlah Rekod Aktif</div>
+      <div class="kpi-sub">Semester Semasa</div>
+    </div>
+    <div class="kpi-card kpi-green">
+      <div class="kpi-value">6</div>
+      <div class="kpi-label">Fail Lengkap</div>
+      <div class="kpi-sub">60.0% Pematuhan</div>
+    </div>
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-value">2</div>
+      <div class="kpi-label">Diterima — Belum Lengkap</div>
+      <div class="kpi-sub">Perlu Tindakan</div>
+    </div>
+    <div class="kpi-card kpi-red">
+      <div class="kpi-value">2</div>
+      <div class="kpi-label">Belum Diterima / Diedar</div>
+      <div class="kpi-sub">Tindakan Segera</div>
+    </div>
+  </div>
+
+  
+  <div class="section-title">Kadar Pematuhan Keseluruhan</div>
+  <div class="compliance-box">
+    <div class="compliance-header">
+      <h3>Status Fail Kursus — Januari 2025</h3>
+      <span class="compliance-pct">60.0%</span>
+    </div>
+    <div class="bar-track">
+      <div class="bar-segment bar-green" style="width:60%"></div>
+      <div class="bar-segment bar-yellow" style="width:20%"></div>
+      <div class="bar-segment bar-orange" style="width:10%"></div>
+      <div class="bar-segment bar-red" style="width:10%"></div>
+    </div>
+    <div class="bar-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#2da44e"></div>Lengkap (60%)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#d4a017"></div>Diterima–Belum Lengkap (20%)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e07000"></div>Diedar–Belum Diterima (10%)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#cf222e"></div>Belum Diedar (10%)</div>
+    </div>
+  </div>
+
+  
+  <div class="section-title">Master Tracker — Status Setiap Fail Kursus</div>
+  <div class="card">
+    <div class="card-header">
+      <span>Rekod Penerimaan &amp; Pematuhan Fail Kursus</span>
+      <span class="badge badge-blue">10 Rekod</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>No. Pekerja</th>
+          <th>Nama Pensyarah</th>
+          <th>Kod Kursus</th>
+          <th>Nama Kursus</th>
+          <th>Tarikh Edar</th>
+          <th>Terima?</th>
+          <th>Lengkap?</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>P001</td><td>Ahmad bin Abu Bakar</td><td>DKA1012</td><td>Pengantar Perakaunan</td><td>02/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Lengkap</span></td>
+        </tr>
+        <tr>
+          <td>P002</td><td>Siti Aishah binti Mohd</td><td>DCS2013</td><td>Pengaturcaraan Asas</td><td>02/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Lengkap</span></td>
+        </tr>
+        <tr>
+          <td>P003</td><td>Mohd Fadzil bin Hassan</td><td>DBM1013</td><td>Pengantar Pengurusan</td><td>02/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-red">T</span></td>
+          <td><span class="pill pill-yellow">Diterima — Belum Lengkap</span></td>
+        </tr>
+        <tr>
+          <td>P004</td><td>Noraini binti Zainudin</td><td>DFW1013</td><td>Fizik Binaan</td><td>02/01/2025</td>
+          <td><span class="pill pill-red">T</span></td>
+          <td><span class="pill pill-red">T</span></td>
+          <td><span class="pill pill-orange">Diedar — Belum Diterima</span></td>
+        </tr>
+        <tr>
+          <td>P005</td><td>Kamaruddin bin Yusof</td><td>DKM1013</td><td>Matematik Kejuruteraan 1</td><td>02/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Lengkap</span></td>
+        </tr>
+        <tr>
+          <td>P006</td><td>Faridah binti Ismail</td><td>DCE1013</td><td>Elektronik Asas</td><td>02/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Lengkap</span></td>
+        </tr>
+        <tr>
+          <td>P007</td><td>Zulkifli bin Ramli</td><td>DPA1013</td><td>Pengantar Pentadbiran Awam</td><td>03/01/2025</td>
+          <td><span class="pill pill-red">T</span></td>
+          <td><span class="pill pill-red">T</span></td>
+          <td><span class="pill pill-orange">Diedar — Belum Diterima</span></td>
+        </tr>
+        <tr>
+          <td>P008</td><td>Rohani binti Abdul Rahim</td><td>DHE1013</td><td>Pengantar Hospitaliti</td><td>03/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Lengkap</span></td>
+        </tr>
+        <tr>
+          <td>P009</td><td>Hairul Nizam bin Daud</td><td>DCS2023</td><td>Pangkalan Data</td><td>03/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-red">T</span></td>
+          <td><span class="pill pill-yellow">Diterima — Belum Lengkap</span></td>
+        </tr>
+        <tr>
+          <td>P010</td><td>Norzaimah binti Said</td><td>DBM2023</td><td>Pengurusan Sumber Manusia</td><td>03/01/2025</td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Y</span></td>
+          <td><span class="pill pill-green">Lengkap</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  
+  <div class="section-title">Trend Bulanan &amp; Senarai Semak Kandungan</div>
+  <div class="two-col">
+
+    
+    <div class="card">
+      <div class="card-header">
+        <span>Trend Pematuhan Bulanan</span>
+        <span class="badge badge-green">Meningkat ↑</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Bulan</th>
+            <th>Lengkap</th>
+            <th>Jumlah</th>
+            <th>% Pematuhan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Januari 2025</td><td>6</td><td>10</td>
+            <td><span class="trend-pct trend-up">60.0%</span><span class="trend-bar" style="width:48px"></span></td>
+          </tr>
+          <tr>
+            <td>Februari 2025</td><td>7</td><td>10</td>
+            <td><span class="trend-pct trend-up">70.0%</span><span class="trend-bar" style="width:56px"></span></td>
+          </tr>
+          <tr>
+            <td>Mac 2025</td><td>8</td><td>10</td>
+            <td><span class="trend-pct trend-up">80.0%</span><span class="trend-bar" style="width:64px"></span></td>
+          </tr>
+          <tr>
+            <td>April 2025</td><td>9</td><td>10</td>
+            <td><span class="trend-pct trend-up">90.0%</span><span class="trend-bar" style="width:72px"></span></td>
+          </tr>
+          <tr>
+            <td>Mei 2025</td><td>10</td><td>10</td>
+            <td><span class="trend-pct trend-up">100.0%</span><span class="trend-bar" style="width:80px"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    
+    <div class="card">
+      <div class="card-header">
+        <span>Senarai Semak Kandungan Fail</span>
+        <span class="badge badge-blue">10 Komponen</span>
+      </div>
+      <ul class="checklist">
+        <li>1. Sukatan Pelajaran / Course Outline <span class="pill pill-green">WAJIB</span></li>
+        <li>2. Rancangan Pengajaran Semester (RPS) <span class="pill pill-green">WAJIB</span></li>
+        <li>3. CLO-PLO Mapping <span class="pill pill-green">WAJIB</span></li>
+        <li>4. Soalan Ujian / Peperiksaan <span class="pill pill-green">WAJIB</span></li>
+        <li>5. Skema Pemarkahan <span class="pill pill-green">WAJIB</span></li>
+        <li>6. Rubrik Penilaian <span class="pill pill-green">WAJIB</span></li>
+        <li>7. Hasil Kerja Pelajar (Sampel) <span class="pill pill-green">WAJIB</span></li>
+        <li>8. Analisis Keputusan <span class="pill pill-green">WAJIB</span></li>
+        <li>9. Minit Mesyuarat Kursus <span class="pill pill-yellow">DIGALAKKAN</span></li>
+        <li>10. Borang Maklumbalas Pelajar <span class="pill pill-yellow">DIGALAKKAN</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  
+  <div class="section-title">Senarai Kursus Aktif Semester Semasa</div>
+  <div class="card">
+    <div class="card-header">
+      <span>20 Kursus — Semester 1 Sesi 2024/2025</span>
+      <span class="badge badge-green">Semua Aktif</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>No</th><th>Kod Kursus</th><th>Nama Kursus</th><th>Jam Kredit</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>DKA1012</td><td>Pengantar Perakaunan</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>2</td><td>DKA1022</td><td>Matematik Perniagaan</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>3</td><td>DCS2013</td><td>Pengaturcaraan Asas</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>4</td><td>DCS2023</td><td>Pangkalan Data</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>5</td><td>DCS3033</td><td>Rangkaian Komputer</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>6</td><td>DBM1013</td><td>Pengantar Pengurusan</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>7</td><td>DBM2023</td><td>Pengurusan Sumber Manusia</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>8</td><td>DBM3033</td><td>Pemasaran</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>9</td><td>DKM1013</td><td>Matematik Kejuruteraan 1</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>10</td><td>DKM2023</td><td>Statistik Kejuruteraan</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>11</td><td>DCE1013</td><td>Elektronik Asas</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>12</td><td>DCE2023</td><td>Litar Digital</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>13</td><td>DFW1013</td><td>Fizik Binaan</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>14</td><td>DFW2023</td><td>Ukur Bangunan</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>15</td><td>DFW3033</td><td>Teknologi Konkrit</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>16</td><td>DPA1013</td><td>Pengantar Pentadbiran Awam</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>17</td><td>DPA2023</td><td>Undang-Undang Pentadbiran</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>18</td><td>DPA3033</td><td>Pengurusan Pejabat</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>19</td><td>DHE1013</td><td>Pengantar Hospitaliti</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+        <tr><td>20</td><td>DHE2023</td><td>Pengurusan Acara</td><td>3</td><td><span class="pill pill-green">Aktif</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>Dashboard Kualiti Fail Kursus  |  Politeknik Seberang Perai  |  Semester 1 Sesi 2024/2025</p>
+  <p style="margin-top:6px">Made with IBM Bob</p>
+</div>
+
+</body>
+</html>
